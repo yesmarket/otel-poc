@@ -1,0 +1,159 @@
+{
+   "openapi": "3.0.0",
+   "servers": [
+      {
+         "description": "localhost",
+         "url": "http://localhost:{port}",
+         "variables": {
+            "port": {
+               "default": "5001"
+            }
+         }
+      },
+      {
+         "description": "docker-machine",
+         "url": "http://{ip}:{port}",
+         "variables": {
+            "ip": {
+               "default": "192.168.99.100",
+               "description": "the IP address of the docker-machine"
+            },
+          "port": {
+            "default": "5001"
+          }
+         }
+      }
+   ],
+   "info": {
+      "title": "Test",
+      "version": "1.0.0",
+      "description": "Just a test",
+      "contact": {
+         "email": "ryan.bartsch@flexigroup.com.au"
+      },
+      "license": {
+         "name": "Apache 2.0",
+         "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      }
+   },
+   "paths": {
+    "/{version}/test": {
+      "get": {
+        "summary": "Test GET",
+        "description": "Test GET",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "description": "API version.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [ "v1" ],
+              "default": "v1"
+            }
+          },
+          {
+            "name": "X-TrackingID",
+            "in": "header",
+            "description": "tracking/correlation ID.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TrackingId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Test POST",
+        "description": "Test POST",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "description": "API version.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [ "v1" ],
+              "default": "v1"
+            }
+          },
+          {
+            "name": "X-TrackingID",
+            "in": "header",
+            "description": "tracking/correlation ID.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TrackingId"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+   },
+   "components": {
+      "schemas": {
+         "TrackingId": {
+            "type": "string",
+            "description": "The main end to end tracking id provided by the user",
+            "example": "c2afcce7-727a-413f-8619-8cb0d90b4aaa"
+         },
+         "TestRequest": {
+            "type": "object",
+            "required": [ "operation", "resource" ],
+            "properties": {
+               "testField": {
+                  "type": "string",
+                  "example": "test",
+                  "description": "A test field"
+               }
+            }
+         },
+         "TestResponse": {
+            "type": "object",
+            "required": [ "allow" ],
+            "properties": {
+               "testField": {
+                  "type": "boolean",
+                  "example": true
+               }
+            }
+         }
+      }
+   }
+}

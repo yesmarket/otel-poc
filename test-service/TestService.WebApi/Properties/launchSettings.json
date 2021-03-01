@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5001/swagger",
+      "environmentVariables": {
+        "ENVIRONMENT": "dev",
+        "PORT_NUMBER": "5001"
+      },
+      "applicationUrl": "http://localhost:5001/"
+    }
+  }
+}
