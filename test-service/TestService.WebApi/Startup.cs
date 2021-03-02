@@ -1,24 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Reflection;
-using Flurl;
-using Galaxy.Common.Configuration;
-using Galaxy.Common.ErrorHandling;
-using Galaxy.Common.Security.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using Serilog.Enrichers.Correlation;
 using TestService.WebApi.Health;
-using TestService.WebApi.Support;
 
 namespace TestService.WebApi
 {
@@ -35,8 +27,6 @@ namespace TestService.WebApi
       // This method gets called by the runtime. Use this method to add services to the container.
       public void ConfigureServices(IServiceCollection services)
       {
-         services.AddSettings<ApplicationSettings>(_configuration.GetSection("applicationSettings"));
-
          services.AddApiVersioning(options => options.ReportApiVersions = true);
 
          services
@@ -44,25 +34,17 @@ namespace TestService.WebApi
             .AddNewtonsoftJson()
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-         var serviceProvider = services.BuildServiceProvider();
-#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-         var appSettings = serviceProvider.GetService<ApplicationSettings>();
-
-         if (appSettings.SwaggerUIEnabled)
+         services.AddSwaggerGen(c =>
          {
-            services.AddSwaggerGen(c =>
-            {
-               c.SwaggerDoc(appSettings.ServiceName,
-                  new OpenApiInfo
-                  {
-                     Title = appSettings.ServiceName,
-                     Version = Assembly.GetEntryAssembly()?
-                        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                        .InformationalVersion ?? "NA"
-                  });
-            });
-         }
+            c.SwaggerDoc("Test",
+               new OpenApiInfo
+               {
+                  Title = "Test",
+                  Version = Assembly.GetEntryAssembly()?
+                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                     .InformationalVersion ?? "NA"
+               });
+         });
 
          services.AddCors(o => o.AddPolicy("AllowAnyOrigin", builder =>
          {
@@ -72,18 +54,9 @@ namespace TestService.WebApi
                .AllowAnyHeader();
          }));
 
-         //if (appSettings.AuthenticationEnabled)
-         //{
-         //   services.AddAuthN();
-         //   services.AddAuthZ();
-         //}
-
-         if (appSettings.HealthChecksEnabled)
-         {
-            services.AddSingleton<HealthCheck>();
-            services.AddHealthChecks()
-               .AddCheck<HealthCheck>(appSettings.ServiceName);
-         }
+         services.AddSingleton<HealthCheck>();
+         services.AddHealthChecks()
+            .AddCheck<HealthCheck>("Test");
 
          services.AddControllers();
       }
@@ -97,46 +70,24 @@ namespace TestService.WebApi
 
          try
          {
-            var appSettings = serviceProvider.GetService<IOptions<ApplicationSettings>>().Value;
 
-            if (appSettings.SwaggerUIEnabled)
-            {
-               app.UseStaticFiles()
-                  .UseSwagger()
-                  .UseSwaggerUI(c =>
-                  {
-                     c.SwaggerEndpoint(Url.Combine("/", "swagger.json"), appSettings.ServiceName);
-                  });
-            }
-
-            app.UseExceptionMiddleware(new Dictionary<HttpStatusCode, IEnumerable<Type>>
-            {
-               {HttpStatusCode.Unauthorized, new[] {typeof(AuthorizationException)}}
-            });
+            app.UseStaticFiles()
+               .UseSwagger()
+               .UseSwaggerUI(c =>
+               {
+                  c.SwaggerEndpoint("/swagger.json", "Test");
+               });
 
             app.UseRouting();
 
             app.UseCors("AllowAnyOrigin");
 
-            if (appSettings.AuthenticationEnabled)
-            {
-               app.UseAuthentication();
-               app.UseAuthorization();
-            }
-
             app.UseEndpoints(endpoints =>
             {
                endpoints.MapControllers();
 
-               if (appSettings.HealthChecksEnabled)
-               {
-                  endpoints.MapHealthChecks(appSettings.HealthChecksPath ?? "/health");
-               }
-
-               if (appSettings.MetricsEnabled)
-               {
-                  endpoints.MapMetrics(appSettings.MetricsPath ?? "/metrics");
-               }
+                  endpoints.MapHealthChecks("/health");
+                  endpoints.MapMetrics("/metrics");
             });
 
 #pragma warning disable CA2000 // Dispose objects before losing scope

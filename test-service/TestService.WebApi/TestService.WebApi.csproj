@@ -16,13 +16,6 @@
      <None Remove="Services\**" />
    </ItemGroup>
   <ItemGroup>
-      <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="3.1.1" />
-      <PackageReference Include="Azure.Identity" Version="1.2.2" />
-      <PackageReference Include="Galaxy.Common.Configuration" Version="2.1.0-ci.47" />
-      <PackageReference Include="Galaxy.Common.ErrorHandling" Version="2.1.0-ci.93" />
-      <PackageReference Include="Galaxy.Common.Mvc" Version="2.1.0-ci.47" />
-      <PackageReference Include="Galaxy.Common.Security" Version="3.0.0-ci.77" />
-      <PackageReference Include="Galaxy.Common.Validation" Version="2.1.0-ci.47" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="4.1.1" />
       <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">

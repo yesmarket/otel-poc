@@ -34,8 +34,6 @@ namespace TestService.WebApi
                         var environment = Environment.GetEnvironmentVariable("ENVIRONMENT");
                         builder.SetBasePath(basePath);
                         builder.AddJsonFile("appsettings.json", false, true);
-                        if (!string.IsNullOrEmpty(environment))
-                           builder.AddJsonFile($"appsettings.{environment}.json", false, true);
                         builder.AddEnvironmentVariables();
                      })
                      .UseKestrel(o =>

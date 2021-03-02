@@ -6,12 +6,12 @@ networks:
 services:
 
    splunk:
-      image: splunk/splunk:latest
+      image: splunk/splunk
       environment:
          SPLUNK_START_ARGS: "--accept-license"
          SPLUNK_PASSWORD: $SPLUNK_PASSWORD
          SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
-         #SPLUNK_HEC_TOKEN_ENABLESSL: "false"
+         SPLUNK_DEFAULTS_URL: $SPLUNK_DEFAULTS_URL
       ports:
          - 8000:8000
          - 8088:8088
@@ -19,20 +19,18 @@ services:
          - skynet
 
    # test:
-   #    image: hummgroup/test-service
-   #    # build:
-   #    #    context: test-service/
-   #    #    args:
-   #    #       HTTP_PROXY: ${HTTP_PROXY}
-   #    #       FLEXIGROUP_UNIVERSE_ARTIFACTS_URL: $FLEXIGROUP_UNIVERSE_ARTIFACTS_URL
-   #    #       FLEXIGROUP_ARTIFACTS_USER: $FLEXIGROUP_ARTIFACTS_USER
-   #    #       FLEXIGROUP_ARTIFACTS_USER_TOKEN: $FLEXIGROUP_ARTIFACTS_USER_TOKEN
+   #    #image: ryans/test-service
+   #    build:
+   #       context: test-service/
+   #    container_name: test
+   #    environment:
+   #       WAIT_FOR_IT_URL: $WAIT_FOR_IT_URL
    #    ports:
    #       - 5001:5001
    #    logging:
    #       driver: splunk
    #       options:
-   #          splunk-url: http://localhost:8088
+   #          splunk-url: $SPLUNK_URL
    #          splunk-token: $SPLUNK_HEC_TOKEN
    #          splunk-insecureskipverify: 'true'
    #    networks:

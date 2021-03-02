@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace TestService.WebApi.Controllers
@@ -18,17 +17,17 @@ namespace TestService.WebApi.Controllers
       }
 
       [HttpGet]
-      public async Task<IActionResult> GetAsync()
+      public IActionResult Get()
       {
-          _logger.LogInformation($"Called {nameof(GetAsync)}");
+          _logger.LogInformation($"Called {nameof(Get)}");
 
           return Ok();
       }
 
-        [HttpPost]
-      public async Task<IActionResult> PostAsync()
+      [HttpPost]
+      public IActionResult Post()
       {
-         _logger.LogInformation($"Called {nameof(PostAsync)}");
+         _logger.LogInformation($"Called {nameof(Post)}");
 
          return Ok();
       }
