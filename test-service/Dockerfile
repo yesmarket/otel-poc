@@ -20,9 +20,11 @@ ENV ASPNETCORE_URLS=http://*:5001
 
 EXPOSE 5001
 
+COPY --from=build /tmp/*.sh /opt/TestService.WebApi/
 COPY --from=build /opt/TestService.WebApi/ /opt/TestService.WebApi/
 COPY --from=build /opt/TestService.WebApi/appsettings*.json $CONFIG_DIR
 
 WORKDIR /opt/TestService.WebApi
 
-ENTRYPOINT ["dotnet", "TestService.WebApi.dll"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["dotnet", "TestService.WebApi.dll"]
