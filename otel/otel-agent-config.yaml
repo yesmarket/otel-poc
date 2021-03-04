@@ -1,0 +1,29 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  # splunk_hec:
+  #   token: "${SPLUNK_HEC_TOKEN}"
+  #   endpoint: "${SPLUNK_HEC_URL}"
+  #   source: "otel"
+  #   sourcetype: "otel"
+  #   insecure_skip_verify: true
+  kafka:
+    brokers:
+      - "${KAFKA_URL}"
+    protocol_version: 2.0.0
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [kafka]
+    # metrics:
+    #   receivers: [otlp]
+    #   exporters: [splunk_hec]
+    # logs:
+    #   receivers: [otlp]
+    #   exporters: [splunk_hec]

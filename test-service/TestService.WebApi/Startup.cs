@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog.Enrichers.Correlation;
 using TestService.WebApi.Health;
@@ -27,8 +29,19 @@ namespace TestService.WebApi
       // This method gets called by the runtime. Use this method to add services to the container.
       public void ConfigureServices(IServiceCollection services)
       {
-         services.AddApiVersioning(options => options.ReportApiVersions = true);
+         AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
+         services.AddOpenTelemetryTracing(builder => builder
+            .AddAspNetCoreInstrumentation()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("my-app"))
+            .AddOtlpExporter(options =>
+            {
+               options.Endpoint = new Uri("http://192.168.99.100:4317");
+            })
+         );
+
+         services.AddApiVersioning(options => options.ReportApiVersions = true);
+         
          services
             .AddMvc()
             .AddNewtonsoftJson()
@@ -70,7 +83,6 @@ namespace TestService.WebApi
 
          try
          {
-
             app.UseStaticFiles()
                .UseSwagger()
                .UseSwaggerUI(c =>

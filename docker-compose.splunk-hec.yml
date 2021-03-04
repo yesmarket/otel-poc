@@ -19,12 +19,12 @@ services:
          - skynet
 
    test:
-      #image: ryans/test-service
       build:
          context: test-service/
       container_name: test
-      environment:
-         WAIT_FOR_IT_URL: $WAIT_FOR_IT_URL
+      restart: always
+      depends_on:
+         - splunk
       ports:
          - 5001:5001
       logging:

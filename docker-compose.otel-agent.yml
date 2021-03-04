@@ -7,6 +7,7 @@ services:
 
    splunk:
       image: splunk/splunk
+      container_name: splunk
       environment:
          SPLUNK_START_ARGS: "--accept-license"
          SPLUNK_PASSWORD: $SPLUNK_PASSWORD
@@ -18,18 +19,17 @@ services:
       networks:
          - skynet
 
-   logstash:
-      build:
-         context: logstash/
-      container_name: logstash
+   kafka:
+      image: landoop/fast-data-dev:latest
+      container_name: kafka
       environment:
-         LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-         SPLUNK_HEC_URL: $SPLUNK_HEC_URL
-         SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
+         ADV_HOST: $ADV_HOST
       ports:
-         - 5000:5000
-         - 5043:5043
-         - 12201:12201/udp
+         - 2181:2181
+         - 3030:3030
+         - 8081-8083:8081-8083
+         - 9581-9585:9581-9585
+         - 9092:9092
       networks:
          - skynet
 
@@ -39,10 +39,18 @@ services:
       container_name: test
       ports:
          - 5001:5001
-      logging:
-         driver: gelf
-         options:
-            gelf-address: $GELF_ADDRESS
-            gelf-compression-type: gzip
+      networks:
+         - skynet
+
+   otel:
+      build:
+         context: otel/
+      container_name: otel
+      restart: always
+      environment:
+         SPLUNK_HEC_URL: $SPLUNK_HEC_URL
+         SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
+      ports:
+         - 4317:4317
       networks:
          - skynet

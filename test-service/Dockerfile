@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 
 WORKDIR /tmp
 
-COPY ./*.sln ./*/*.csproj ./*.sh ./
+COPY ./*.sln ./*/*.csproj ./
 RUN for file in $(ls *.csproj); do mkdir -p ${file%.*}/ && mv $file ${file%.*}/; done
 
 COPY ./nuget.docker.config ./NuGet.Config
@@ -20,11 +20,9 @@ ENV ASPNETCORE_URLS=http://*:5001
 
 EXPOSE 5001
 
-COPY --from=build /tmp/*.sh /opt/TestService.WebApi/
 COPY --from=build /opt/TestService.WebApi/ /opt/TestService.WebApi/
 COPY --from=build /opt/TestService.WebApi/appsettings*.json $CONFIG_DIR
 
 WORKDIR /opt/TestService.WebApi
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["dotnet", "TestService.WebApi.dll"]
+ENTRYPOINT ["dotnet", "TestService.WebApi.dll"]
