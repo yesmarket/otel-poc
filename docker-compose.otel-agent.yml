@@ -3,6 +3,9 @@ version: '3.5'
 networks:
    skynet:
 
+volumes:
+   logs: {}
+
 services:
 
    splunk:
@@ -19,26 +22,41 @@ services:
       networks:
          - skynet
 
-   kafka:
-      image: landoop/fast-data-dev:latest
-      container_name: kafka
-      environment:
-         ADV_HOST: $ADV_HOST
-      ports:
-         - 2181:2181
-         - 3030:3030
-         - 8081-8083:8081-8083
-         - 9581-9585:9581-9585
-         - 9092:9092
-      networks:
-         - skynet
+   # elasticsearch:
+   #    build:
+   #       context: elasticsearch/
+   #    container_name: elasticsearch
+   #    volumes:
+   #       - elasticsearch_data:/usr/share/elasticsearch/data
+   #    restart: unless-stopped
+   #    environment:
+   #       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+   #    ports:
+   #       - 9200:9200
+   #       - 9300:9300
+   #    networks:
+   #       - logging
 
+   # kibana:
+   #    build:
+   #       context: kibana/
+   #    container_name: kibana
+   #    restart: unless-stopped
+   #    ports:
+   #       - 5601:5601
+   #    networks:
+   #       - logging
+   #    depends_on:
+   #       - elasticsearch
+         
    test:
       build:
          context: test-service/
       container_name: test
       ports:
          - 5001:5001
+      volumes:
+         - logs:/var/log
       networks:
          - skynet
 
@@ -52,5 +70,9 @@ services:
          SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
       ports:
          - 4317:4317
+      volumes:
+         - logs:/var/log
       networks:
          - skynet
+      depends_on:
+         - test

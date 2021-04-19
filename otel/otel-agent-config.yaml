@@ -1,29 +1,48 @@
 receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
+  # otlp:
+  #   protocols:
+  #     grpc:
+  #     http:
+  filelog:
+    include: [ /var/log/*.txt ]
+    # operators:    
+    #   - type: json_parser
+    #     timestamp:
+    #       parse_from: time
+    #       layout: '%Y-%m-%d %H:%M:%S'
+  # prometheus:
+  #   config:
+  #     scrape_configs:
+  #       - job_name: "otel-collector"
+  #         scrape_interval: 5s
+  #         static_configs:
+  #           - targets: [ "test:5001/metrics" ]
 
 exporters:
-  # splunk_hec:
-  #   token: "${SPLUNK_HEC_TOKEN}"
-  #   endpoint: "${SPLUNK_HEC_URL}"
-  #   source: "otel"
-  #   sourcetype: "otel"
-  #   insecure_skip_verify: true
-  kafka:
-    brokers:
-      - "${KAFKA_URL}"
-    protocol_version: 2.0.0
+  splunk_hec:
+    token: "${SPLUNK_HEC_TOKEN}"
+    endpoint: "${SPLUNK_HEC_URL}"
+    source: "otel"
+    sourcetype: "otel"
+    insecure_skip_verify: true
+  # kafka:
+  #   brokers:
+  #     - "${KAFKA_URL}"
+  #   protocol_version: 2.0.0
+  # elasticapm:
+  #   apm_server_url: "http://elasticsearch:9200"
+  # elasticsearch:
+  #   endpoints:
+  #     - "https://elasticsearch:9200"
 
 service:
   pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [kafka]
+    # traces:
+    #   receivers: [otlp]
+    #   exporters: [kafka]
     # metrics:
-    #   receivers: [otlp]
-    #   exporters: [splunk_hec]
-    # logs:
-    #   receivers: [otlp]
-    #   exporters: [splunk_hec]
+    #   receivers: [prometheus]
+    #   exporters: [elastic]
+    logs:
+      receivers: [filelog]
+      exporters: [splunk_hec]
