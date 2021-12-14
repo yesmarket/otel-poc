@@ -4,6 +4,7 @@ The aim of this project is to build a telemetry pipeline POC that specifically u
 
 # Diagram
 
+![telemetry pipeline](https://user-images.githubusercontent.com/10783372/145910644-96fbff84-759b-48a4-82df-db92f6601f06.png)
 
 # Things to do
 
