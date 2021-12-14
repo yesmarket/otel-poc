@@ -4,11 +4,11 @@ networks:
    skynet:
 
 volumes:
-   logs: {}
+   # logs: {}
    kafka-data: {}
    zookeeper-data: {}
    zookeeper-log: {}
-   # elasticsearch-data: {}
+   elasticsearch-data: {}
 
 services:
 
@@ -16,6 +16,7 @@ services:
       image: confluentinc/cp-zookeeper:6.2.1
       hostname: zookeeper
       container_name: zookeeper
+      restart: unless-stopped
       ports:
          - 2181:2181
       environment:
@@ -31,14 +32,16 @@ services:
       image: confluentinc/cp-kafka:6.2.1
       hostname: kafka
       container_name: kafka
+      restart: unless-stopped
       ports:
          - 9092:9092
       expose:
          - 9093
       environment:
+         KAFKA_HEAP_OPTS: "-Xmx256m -Xms256m"
          KAFKA_BROKER_ID: 1
          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-         KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-192.168.99.100}:9092
+         KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-192.168.99.103}:9092
          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
          KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -65,59 +68,80 @@ services:
       depends_on:
          - kafka
 
-   test:
-      build:
-         context: test-service/
-      hostname: test
-      container_name: test
-      ports:
-         - 5001:5001
-      volumes:
-         - logs:/var/log
-      networks:
-         - skynet
-
-   otel:
-      build:
-         context: otel/
-      hostname: otel
-      container_name: otel
-      restart: always
-      ports:
-         - 4317:4317
-      volumes:
-         - logs:/var/log
-      networks:
-         - skynet
-      depends_on:
-         - test
-         - kafka
-
-   # elasticsearch:
+   # test:
    #    build:
-   #       context: elasticsearch/
-   #    hostname: elasticsearch
-   #    container_name: elasticsearch
-   #    volumes:
-   #       - elasticsearch-data:/usr/share/elasticsearch/data
-   #    restart: unless-stopped
-   #    environment:
-   #       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+   #       context: test-service/
+   #    hostname: test
+   #    container_name: test
    #    ports:
-   #       - 9200:9200
-   #       - 9300:9300
+   #       - 5001:5001
+   #    volumes:
+   #       - logs:/var/log
    #    networks:
    #       - skynet
 
-   # kibana:
+   # otel:
    #    build:
-   #       context: kibana/
-   #    hostname: kibana
-   #    container_name: kibana
-   #    restart: unless-stopped
+   #       context: otel/
+   #    hostname: otel
+   #    container_name: otel
+   #    restart: always
    #    ports:
-   #       - 5601:5601
+   #       - 4317:4317
+   #    volumes:
+   #       - logs:/var/log
    #    networks:
    #       - skynet
    #    depends_on:
-   #       - elasticsearch
+   #       - test
+   #       - kafka
+
+   elasticsearch:
+      build:
+         context: elasticsearch/
+      hostname: elasticsearch
+      container_name: elasticsearch
+      volumes:
+         - elasticsearch-data:/usr/share/elasticsearch/data
+      restart: unless-stopped
+      environment:
+         ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ports:
+         - 9200:9200
+         - 9300:9300
+      networks:
+         - skynet
+
+   kibana:
+      build:
+         context: kibana/
+      hostname: kibana
+      container_name: kibana
+      restart: unless-stopped
+      ports:
+         - 5601:5601
+      networks:
+         - skynet
+      depends_on:
+         - elasticsearch
+
+   connect:
+      build:
+         context: connect/
+      hostname: connect
+      container_name: connect
+      restart: unless-stopped
+      ports:
+         - 8083:8083
+      environment:
+         GROUP_ID: 1
+         PLUGIN_PATH: "/kafka/connect"
+         BOOTSTRAP_SERVERS: kafka:9092
+         CONFIG_STORAGE_TOPIC: "kafka_connect_configs"
+         OFFSET_STORAGE_TOPIC: "kafka_connect_offsets"
+         STATUS_STORAGE_TOPIC: "kafka_connect_statuses"
+      networks:
+         - skynet
+      depends_on:
+         - kafka
+         - elasticsearch
