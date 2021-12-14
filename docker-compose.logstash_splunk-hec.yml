@@ -9,17 +9,27 @@ services:
       build:
          context: test-service/
       container_name: test
-      restart: always
-      depends_on:
-         - splunk
       ports:
          - 5001:5001
       logging:
-         driver: splunk
+         driver: gelf
          options:
-            splunk-url: http://splunk:8088
-            splunk-token: $SPLUNK_HEC_TOKEN
-            splunk-insecureskipverify: 'true'
+            gelf-address: udp://logstash:12201
+            gelf-compression-type: gzip
+      networks:
+         - skynet
+
+   logstash:
+      build:
+         context: logstash/
+      container_name: logstash
+      environment:
+         LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+         SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
+      ports:
+         - 5000:5000
+         - 5043:5043
+         - 12201:12201/udp
       networks:
          - skynet
 

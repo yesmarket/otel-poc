@@ -3,28 +3,41 @@ version: '3.5'
 networks:
    skynet:
 
-services:
+volumes:
+   logs: {}
 
+services:
+        
    test:
       build:
          context: test-service/
       container_name: test
-      restart: always
-      depends_on:
-         - splunk
       ports:
          - 5001:5001
-      logging:
-         driver: splunk
-         options:
-            splunk-url: http://splunk:8088
-            splunk-token: $SPLUNK_HEC_TOKEN
-            splunk-insecureskipverify: 'true'
+      volumes:
+         - logs:/var/log
       networks:
          - skynet
 
+   otel:
+      build:
+         context: otel/
+      container_name: otel
+      restart: always
+      environment:
+         SPLUNK_HEC_TOKEN: $SPLUNK_HEC_TOKEN
+      ports:
+         - 4317:4317
+      volumes:
+         - logs:/var/log
+      networks:
+         - skynet
+      depends_on:
+         - test
+
    splunk:
       image: splunk/splunk
+      container_name: splunk
       environment:
          SPLUNK_START_ARGS: "--accept-license"
          SPLUNK_PASSWORD: $SPLUNK_PASSWORD
