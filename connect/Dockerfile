@@ -11,6 +11,6 @@ COPY --from=temp /tmp/confluentinc-kafka-connect-elasticsearch-10.0.3/lib ./conn
 COPY ./connect-elasticsearch-sink.properties ./config
 
 USER root
-RUN sed -i 's/connect-distributed/connect-standalone/g' /docker-entrypoint.sh
-RUN sed -i '/\s*exec/s/$/ .\/config\/connect-elasticsearch-sink.properties/' /docker-entrypoint.sh
+RUN sed -i 's/distributed/standalone/g' /docker-entrypoint.sh
+#RUN sed -i '/\s*exec/s/$/ .\/config\/connect-elasticsearch-sink.properties/' /docker-entrypoint.sh
 USER kafka

@@ -43,13 +43,24 @@ function Clean-Docker {
       echo "removing volumes..."
       docker volume rm $(docker volume ls -q) > $null
    }
-   if ($networks -And (docker network ls -q)) {
+   if ($networks -And (docker network ls -f "type=custom" -q)) {
       echo "removing networks..."
       docker network rm $(docker network ls -f "type=custom" -q) > $null
    }
-   if ($images -And (docker ps -a -q)) {
+   if ($images -And (docker image ls -a -q)) {
       echo "removing images..."
-      docker rmi $(docker ps -a -q) > $null
+      docker rmi $(docker image ls -a -q) > $null
+   }
+}
+
+function Clean-Docker2 {
+   Param(
+      [string]$images='otel'
+   )
+   Clean-Docker -containers $true -volumes $true -networks $true -images $false
+   if ($images -And (docker image ls -a -q)) {
+      $arr = $images.Split(",")
+      $arr | ForEach-Object { iex "docker rmi -f otel-poc_$_" }
    }
 }
 

@@ -4,7 +4,7 @@ networks:
    skynet:
 
 volumes:
-   # logs: {}
+   logs: {}
    kafka-data: {}
    zookeeper-data: {}
    zookeeper-log: {}
@@ -41,7 +41,7 @@ services:
          KAFKA_HEAP_OPTS: "-Xmx256m -Xms256m"
          KAFKA_BROKER_ID: 1
          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-         KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-192.168.99.103}:9092
+         KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-192.168.99.104}:9092
          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
          KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -53,48 +53,6 @@ services:
          - skynet
       depends_on:
          - zookeeper
-
-   kafdrop:
-      image: obsidiandynamics/kafdrop
-      hostname: kafdrop
-      container_name: kafdrop
-      restart: "no"
-      ports:
-         - 9000:9000
-      environment:
-         KAFKA_BROKERCONNECT: "kafka:9093"
-      networks:
-         - skynet
-      depends_on:
-         - kafka
-
-   # test:
-   #    build:
-   #       context: test-service/
-   #    hostname: test
-   #    container_name: test
-   #    ports:
-   #       - 5001:5001
-   #    volumes:
-   #       - logs:/var/log
-   #    networks:
-   #       - skynet
-
-   # otel:
-   #    build:
-   #       context: otel/
-   #    hostname: otel
-   #    container_name: otel
-   #    restart: always
-   #    ports:
-   #       - 4317:4317
-   #    volumes:
-   #       - logs:/var/log
-   #    networks:
-   #       - skynet
-   #    depends_on:
-   #       - test
-   #       - kafka
 
    elasticsearch:
       build:
@@ -112,6 +70,36 @@ services:
       networks:
          - skynet
 
+   test:
+      build:
+         context: test-service/
+      hostname: test
+      container_name: test
+      ports:
+         - 5001:5001
+      expose:
+         - 5002
+      volumes:
+         - logs:/var/log
+      networks:
+         - skynet
+
+   otel:
+      build:
+         context: otel/
+      hostname: otel
+      container_name: otel
+      restart: always
+      ports:
+         - 4317:4317
+      volumes:
+         - logs:/var/log
+      networks:
+         - skynet
+      depends_on:
+         - test
+         - kafka
+
    kibana:
       build:
          context: kibana/
@@ -124,6 +112,20 @@ services:
          - skynet
       depends_on:
          - elasticsearch
+
+   kafdrop:
+      image: obsidiandynamics/kafdrop
+      hostname: kafdrop
+      container_name: kafdrop
+      restart: "no"
+      ports:
+         - 9000:9000
+      environment:
+         KAFKA_BROKERCONNECT: "kafka:9093"
+      networks:
+         - skynet
+      depends_on:
+         - kafka
 
    connect:
       build:

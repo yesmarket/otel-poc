@@ -8,9 +8,7 @@ The aim of this project is to build a telemetry pipeline POC that specifically u
 
 # Things to do
 
-* Update OTEL contrib image so that it can send logs to Kafka in JSON format.
 * Implement ingest pipeline in Elasticsearch. This will need to; a) handle bulk messages from Kafka, and b) format log messages appropriately. Note: potentially need to upgrade Elasticsearch, Kibana, and the Kafka Connect Elasticsearch sink connector.
-* Implement metrics in OTEL agent using prometheus receiver.
 * Add Elastic APM container to the docker-compose file.
 * Add auto-instrumentation to the .NET Core microservice Dockerfile. This should be configured to send traces to the OTEL agent using the OTLP format.
 * Implement traces in OTEL agent using the otlp receiver. Note: AFAIK we should use protobuf for traces, which is supported by Elastic APM.
